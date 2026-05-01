@@ -1,0 +1,5 @@
+name=FuzzTest
+data=ABCDEFGHIJ
+format=Hello World
+count=10
+index=5

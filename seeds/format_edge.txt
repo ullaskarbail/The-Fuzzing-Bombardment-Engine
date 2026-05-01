@@ -1,0 +1,5 @@
+name=Test
+data=ABCDEFGHIJ
+format=Value is %d done
+count=10
+index=5

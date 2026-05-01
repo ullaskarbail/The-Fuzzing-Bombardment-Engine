@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Real-time fuzzing bombardment engine dashboard with AI-powered strategy analysis." />
+  <title>Bombardment Engine — Fuzz Dashboard</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+
+  <!-- ═══ Header ═══════════════════════════════════════════════ -->
+  <header class="header">
+    <div class="header__brand">
+      <div class="header__icon">💣</div>
+      <div>
+        <div class="header__title">Bombardment Engine</div>
+        <div class="header__subtitle">AI-Powered Mutation Fuzzing</div>
+      </div>
+    </div>
+    <div class="header__controls">
+      <div class="header__status" id="connection-status">
+        <span class="status-dot" id="status-dot"></span>
+        <span id="status-text">Disconnected</span>
+      </div>
+      <button class="btn btn--analyze" id="btn-analyze" onclick="analyzeTarget()">🧠 Analyze</button>
+      <button class="btn btn--start" id="btn-start" onclick="startFuzzing()">▶ Start</button>
+      <button class="btn btn--stop"  id="btn-stop" onclick="stopFuzzing()" disabled>■ Stop</button>
+    </div>
+  </header>
+
+  <!-- ═══ Dashboard ════════════════════════════════════════════ -->
+  <main class="dashboard">
+
+    <!-- ── AI Analysis Panel ─────────────────────────────────── -->
+    <section class="panel analysis-panel" id="analysis-panel">
+      <div class="panel__header">
+        <span class="panel__title">🧠 Gemini Strategy Analysis</span>
+        <span class="panel__badge" id="analysis-status">Pending</span>
+      </div>
+      <div class="panel__body">
+        <div class="analysis-content" id="analysis-content">
+          <div class="analysis-prompt">
+            <p style="margin-bottom: 1rem;">Enter the target system name or details, then click <strong>🧠 Analyze</strong> to let Gemini 2.5 Flash select the optimal mutation algorithms.</p>
+            <input type="text" id="target-input" class="target-input" placeholder="e.g. 'vulnerable.cpp parsing key=value pairs' or 'JSON API endpoint'" />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Stat Cards ────────────────────────────────────────── -->
+    <section class="stats-row" id="stats-section">
+      <div class="stat-card">
+        <div class="stat-card__label">Total Iterations</div>
+        <div class="stat-card__value stat-card__value--cyan" id="stat-iterations">0</div>
+        <div class="stat-card__sub" id="stat-iterations-sub">Waiting…</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card__label">Crashes Found</div>
+        <div class="stat-card__value stat-card__value--red" id="stat-crashes">0</div>
+        <div class="stat-card__sub" id="stat-crashes-sub">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card__label">Crash Rate</div>
+        <div class="stat-card__value stat-card__value--amber" id="stat-rate">0%</div>
+        <div class="stat-card__sub">of total executions</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card__label">Speed</div>
+        <div class="stat-card__value stat-card__value--green" id="stat-speed">0</div>
+        <div class="stat-card__sub">exec / sec</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card__label">Uptime</div>
+        <div class="stat-card__value stat-card__value--purple" id="stat-uptime">0s</div>
+        <div class="stat-card__sub" id="stat-seed">—</div>
+      </div>
+    </section>
+
+    <!-- ── Main Grid ─────────────────────────────────────────── -->
+    <section class="main-grid">
+      <div class="panel">
+        <div class="panel__header">
+          <span class="panel__title">⚡ Mutation Distribution</span>
+          <span class="panel__badge" id="algo-badge">4 Algorithms</span>
+        </div>
+        <div class="panel__body">
+          <div class="chart-container" id="mutation-chart">
+            <div class="chart-bar" id="row-bit_flip">
+              <span class="chart-bar__label">Bit Flip</span>
+              <div class="chart-bar__track"><div class="chart-bar__fill chart-bar__fill--green" id="bar-bit_flip" style="width:0%"></div></div>
+              <span class="chart-bar__count" id="count-bit_flip">0</span>
+            </div>
+            <div class="chart-bar" id="row-arithmetic">
+              <span class="chart-bar__label">Arithmetic</span>
+              <div class="chart-bar__track"><div class="chart-bar__fill chart-bar__fill--cyan" id="bar-arithmetic" style="width:0%"></div></div>
+              <span class="chart-bar__count" id="count-arithmetic">0</span>
+            </div>
+            <div class="chart-bar" id="row-block">
+              <span class="chart-bar__label">Block</span>
+              <div class="chart-bar__track"><div class="chart-bar__fill chart-bar__fill--amber" id="bar-block" style="width:0%"></div></div>
+              <span class="chart-bar__count" id="count-block">0</span>
+            </div>
+            <div class="chart-bar" id="row-dictionary">
+              <span class="chart-bar__label">Dictionary</span>
+              <div class="chart-bar__track"><div class="chart-bar__fill chart-bar__fill--purple" id="bar-dictionary" style="width:0%"></div></div>
+              <span class="chart-bar__count" id="count-dictionary">0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel__header">
+          <span class="panel__title">🔴 Live Crash Feed</span>
+          <span class="panel__badge" id="crash-badge">0 crashes</span>
+        </div>
+        <div class="panel__body">
+          <div class="crash-feed" id="crash-feed">
+            <div class="crash-feed__empty" id="crash-empty">
+              No crashes detected yet.<br/>Analyze & start to begin bombardment.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Console ───────────────────────────────────────────── -->
+    <div class="panel">
+      <div class="panel__header">
+        <span class="panel__title">📟 Activity Console</span>
+        <span class="panel__badge" id="console-count">0 events</span>
+      </div>
+      <div class="panel__body" style="padding:0">
+        <div class="console" id="console"></div>
+      </div>
+    </div>
+
+  </main>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
