@@ -295,8 +295,4 @@ And returns only the algorithms that will be most effective — saving CPU cycle
 
 ---
 
-## 📄 License
 
-This project is for **educational and research purposes only**. The vulnerable target binary is intentionally insecure and should never be deployed in production.
-
-MIT License © 2026
